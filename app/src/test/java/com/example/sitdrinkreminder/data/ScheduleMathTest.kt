@@ -1,7 +1,9 @@
 package com.example.sitdrinkreminder.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -25,10 +27,12 @@ class ScheduleMathTest {
 
     @Test
     fun intervalIsClampedToLegalRange() {
-        assertEquals(5, ScheduleMath.coerceInterval(0))
-        assertEquals(5, ScheduleMath.coerceInterval(-30))
+        // 允许 1 分钟这种“秒级体验”的小间隔，下限是 1 分钟
+        assertEquals(1, ScheduleMath.coerceInterval(0))
+        assertEquals(1, ScheduleMath.coerceInterval(-30))
         assertEquals(1440, ScheduleMath.coerceInterval(99999))
         assertEquals(45, ScheduleMath.coerceInterval(45))
+        assertEquals(2, ScheduleMath.coerceInterval(2))
     }
 
     @Test
@@ -120,5 +124,63 @@ class ScheduleMathTest {
         assertNull(ScheduleMath.parseMinutesOfDay("12:60"))
         assertNull(ScheduleMath.parseMinutesOfDay("abc"))
         assertNull(ScheduleMath.parseMinutesOfDay("12"))
+    }
+
+    // ------------------------------------------------------------ 提醒时段
+
+    @Test
+    fun windowKeepsTimeInsideRange() {
+        val window = ActiveWindow(enabled = true, startMinute = 8 * 60, endMinute = 22 * 60)
+        val candidate = millis(2026, 3, 1, 9, 0)
+        assertEquals(candidate, ScheduleMath.clampToWindow(candidate, window, zone))
+    }
+
+    @Test
+    fun windowPushesLateNightTimeToNextMorning() {
+        val window = ActiveWindow(enabled = true, startMinute = 8 * 60, endMinute = 22 * 60)
+        val lateNight = millis(2026, 3, 1, 23, 30)
+        assertEquals(
+            millis(2026, 3, 2, 8, 0),
+            ScheduleMath.clampToWindow(lateNight, window, zone)
+        )
+    }
+
+    @Test
+    fun windowPushesEarlyMorningTimeToSameDayStart() {
+        val window = ActiveWindow(enabled = true, startMinute = 8 * 60, endMinute = 22 * 60)
+        val earlyMorning = millis(2026, 3, 1, 6, 30)
+        assertEquals(
+            millis(2026, 3, 1, 8, 0),
+            ScheduleMath.clampToWindow(earlyMorning, window, zone)
+        )
+    }
+
+    @Test
+    fun overnightWindowWorksAcrossMidnight() {
+        val window = ActiveWindow(enabled = true, startMinute = 22 * 60, endMinute = 6 * 60)
+        assertTrue(ScheduleMath.isWithinWindow(23 * 60, window))
+        assertTrue(ScheduleMath.isWithinWindow(5 * 60, window))
+        assertFalse(ScheduleMath.isWithinWindow(12 * 60, window))
+        // 中午 12 点不在窗口内 -> 顺延到当天 22:00
+        assertEquals(
+            millis(2026, 3, 1, 22, 0),
+            ScheduleMath.clampToWindow(millis(2026, 3, 1, 12, 0), window, zone)
+        )
+    }
+
+    @Test
+    fun startEqualsEndMeansAlwaysAllowed() {
+        val window = ActiveWindow(enabled = true, startMinute = 8 * 60, endMinute = 8 * 60)
+        assertFalse(window.isRestricted)
+        assertTrue(ScheduleMath.isWithinWindow(3 * 60, window))
+        val candidate = millis(2026, 3, 1, 3, 0)
+        assertEquals(candidate, ScheduleMath.clampToWindow(candidate, window, zone))
+    }
+
+    @Test
+    fun disabledWindowDoesNothing() {
+        val window = ActiveWindow(enabled = false, startMinute = 8 * 60, endMinute = 22 * 60)
+        val candidate = millis(2026, 3, 1, 2, 0)
+        assertEquals(candidate, ScheduleMath.clampToWindow(candidate, window, zone))
     }
 }

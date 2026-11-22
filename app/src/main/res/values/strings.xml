@@ -19,8 +19,9 @@
     <!-- 首页 -->
     <string name="next_time_disabled">已关闭</string>
     <string name="next_time_not_configured">请先设置提醒时间</string>
-    <string name="next_time_format">下次提醒：%1$s %2$s</string>
-    <string name="next_time_format_with_remaining">下次提醒：%1$s %2$s（%3$s）</string>
+    <string name="next_time_format">下次提醒：%1$s</string>
+    <string name="next_time_format_with_remaining">下次提醒：%1$s（%2$s）</string>
+    <string name="moment_format">%1$s %2$s</string>
     <string name="day_today">今天</string>
     <string name="day_tomorrow">明天</string>
     <string name="remaining_now">即将提醒</string>
@@ -67,6 +68,7 @@
     <!-- 提醒设置页 -->
     <string name="settings_title">%1$s设置</string>
     <string name="settings_enabled">启用提醒</string>
+    <string name="settings_enabled_hint">关闭后不再提醒，但设置会保留</string>
     <string name="section_mode">提醒方式</string>
     <string name="mode_interval">按间隔提醒</string>
     <string name="mode_fixed">按时间点提醒</string>
@@ -83,5 +85,33 @@
     <string name="action_cancel">取消</string>
     <string name="action_back">返回</string>
     <string name="action_remove_time">删除这个时间点</string>
+
+    <!-- 首页总览 / 状态胶囊 -->
+    <string name="status_on">已开启</string>
+    <string name="status_off">已关闭</string>
+    <string name="overview_none">现在没有开启的提醒</string>
+    <string name="overview_soon">下一次提醒：即将开始</string>
+    <string name="overview_format">下一次：%1$s · %2$s</string>
+
+    <!-- 提醒时段（免打扰窗口） -->
+    <string name="section_window">提醒时段</string>
+    <string name="window_summary_off">已关闭：全天都可能提醒</string>
+    <string name="window_summary_all_day">全天提醒（开始 = 结束）</string>
+    <string name="window_summary_on">每天 %1$s – %2$s 内提醒</string>
+    <string name="window_start_label">开始时间</string>
+    <string name="window_end_label">结束时间</string>
+    <string name="window_hint">只在时段内提醒，其余时间完全静音。开始 = 结束表示全天；支持跨夜，例如 22:00 – 次日 06:00。</string>
+
+    <!-- 通知动作：稍后提醒 -->
+    <string name="notification_action_snooze">稍后 10 分钟</string>
+
+    <!-- 自定义间隔 -->
+    <string name="section_reminder_settings">提醒设置</string>
+    <string name="interval_custom">自定义…</string>
+    <string name="dialog_custom_interval_title">自定义提醒间隔</string>
+    <string name="dialog_custom_interval_hint">输入 1 – 1440 之间的分钟数</string>
+    <string name="interval_invalid">请输入 %1$d – %2$d 之间的分钟数</string>
+    <string name="action_confirm">确定</string>
+    <string name="interval_warning">间隔小于 5 分钟时，锁屏或深度休眠下系统可能合并提醒，这是系统省电机制导致的。</string>
 
 </resources>

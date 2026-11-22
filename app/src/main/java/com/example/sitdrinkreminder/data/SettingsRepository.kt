@@ -84,6 +84,23 @@ class SettingsRepository private constructor(context: Context) {
             prefs.edit().putBoolean(KEY_NOTIFICATION_ASKED, value).apply()
         }
 
+    // ------------------------------------------------------------------ 提醒时段
+
+    /** 提醒时段（免打扰窗口） */
+    fun activeWindow(): ActiveWindow = ActiveWindow(
+        enabled = prefs.getBoolean(KEY_WINDOW_ENABLED, false),
+        startMinute = prefs.getInt(KEY_WINDOW_START, DEFAULT_WINDOW_START),
+        endMinute = prefs.getInt(KEY_WINDOW_END, DEFAULT_WINDOW_END)
+    )
+
+    fun writeActiveWindow(window: ActiveWindow) {
+        prefs.edit()
+            .putBoolean(KEY_WINDOW_ENABLED, window.enabled)
+            .putInt(KEY_WINDOW_START, window.startMinute)
+            .putInt(KEY_WINDOW_END, window.endMinute)
+            .commit()
+    }
+
     // ---------------------------------------------------------------------- 内部
 
     private fun defaultsFor(type: ReminderType): Pair<Int, List<Int>> = when (type) {
@@ -122,6 +139,14 @@ class SettingsRepository private constructor(context: Context) {
         private const val KEY_EXACT_ALARM = "exact_alarm"
         private const val KEY_NOTIFICATION_SIGNATURE = "notification_signature"
         private const val KEY_NOTIFICATION_ASKED = "notification_asked"
+
+        private const val KEY_WINDOW_ENABLED = "window_enabled"
+        private const val KEY_WINDOW_START = "window_start"
+        private const val KEY_WINDOW_END = "window_end"
+
+        /** 默认提醒时段 08:00 - 22:00 */
+        private const val DEFAULT_WINDOW_START = 8 * 60
+        private const val DEFAULT_WINDOW_END = 22 * 60
 
         @Volatile
         private var instance: SettingsRepository? = null

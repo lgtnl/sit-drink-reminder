@@ -16,4 +16,21 @@
     <!-- 提示条 -->
     <color name="banner_bg">#FFFFF3E0</color>
     <color name="banner_text">#FF8A4B00</color>
+
+    <!-- 头部渐变 -->
+    <color name="header_start">#FF0F766E</color>
+    <color name="header_end">#FF0D9488</color>
+    <color name="on_header">#FFFFFFFF</color>
+    <color name="on_header_soft">#CCFFFFFF</color>
+    <color name="header_chip">#33FFFFFF</color>
+
+    <!-- 卡片内的图标底色 / 状态胶囊 -->
+    <color name="icon_circle_bg">#FFE8F4F1</color>
+    <color name="pill_on_bg">#FFDCFCE7</color>
+    <color name="pill_on_text">#FF15803D</color>
+    <color name="pill_off_bg">#FFF1F5F4</color>
+    <color name="pill_off_text">#FF64748B</color>
+
+    <!-- 主按钮 -->
+    <color name="ripple_light">#33FFFFFF</color>
 </resources>

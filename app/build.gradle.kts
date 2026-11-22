@@ -32,8 +32,8 @@ android {
         applicationId = "com.example.sitdrinkreminder"
         minSdk = 26      // Android 8.0：NotificationChannel / java.time 都原生可用
         targetSdk = 34   // 适配 Android 14
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
 
         // 本项目只有中文界面，且中文放在 values/ 默认目录里，
         // 因此不需要额外声明 resourceConfigurations。

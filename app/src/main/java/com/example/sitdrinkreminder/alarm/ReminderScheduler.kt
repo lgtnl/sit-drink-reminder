@@ -6,12 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import com.example.sitdrinkreminder.data.ActiveWindow
 import com.example.sitdrinkreminder.data.ReminderConfig
 import com.example.sitdrinkreminder.data.ReminderType
 import com.example.sitdrinkreminder.data.ScheduleMath
 import com.example.sitdrinkreminder.data.ScheduleMode
 import com.example.sitdrinkreminder.data.SettingsRepository
 import com.example.sitdrinkreminder.util.AppPermissions
+import java.time.ZoneId
 
 /**
  * 提醒调度器（AlarmManager 方案）。
@@ -35,22 +37,37 @@ object ReminderScheduler {
      * @param keepExistingIfFuture true：沿用配置里已有的时间（开机/回前台自愈用；
      *                             仍在未来就保留，刚错过就补发，错过太久则重新计时）。
      *                             false：从现在重新计时（用户刚修改了设置）。
+     * @param window 提醒时段；落在时段外的时间会被顺延到下一个时段开始。
      */
     fun nextTriggerFor(
         config: ReminderConfig,
         nowMillis: Long = System.currentTimeMillis(),
-        keepExistingIfFuture: Boolean
+        keepExistingIfFuture: Boolean,
+        window: ActiveWindow = ActiveWindow.ALWAYS
     ): Long {
         if (!config.enabled) return 0L
+        val zone = ZoneId.systemDefault()
         return when (config.mode) {
-            ScheduleMode.INTERVAL -> if (keepExistingIfFuture) {
-                ScheduleMath.ensureFuture(config.nextTriggerAt, config.intervalMinutes, nowMillis)
-            } else {
-                ScheduleMath.firstTriggerFromNow(config.intervalMinutes, nowMillis)
+            ScheduleMode.INTERVAL -> {
+                val raw = if (keepExistingIfFuture) {
+                    ScheduleMath.ensureFuture(config.nextTriggerAt, config.intervalMinutes, nowMillis)
+                } else {
+                    ScheduleMath.firstTriggerFromNow(config.intervalMinutes, nowMillis)
+                }
+                ScheduleMath.clampToWindow(raw, window, zone)
             }
 
-            ScheduleMode.FIXED_TIME ->
-                ScheduleMath.nextFixedOccurrence(config.timesOfDay, nowMillis) ?: 0L
+            ScheduleMode.FIXED_TIME -> {
+                val computed = ScheduleMath.nextFixedOccurrence(config.timesOfDay, nowMillis, zone)
+                // 「稍后提醒」把 nextTriggerAt 设成了未来更早的时间点 —— 用户显式要求，不受时段限制
+                val snoozed = config.nextTriggerAt > nowMillis &&
+                    (computed == null || config.nextTriggerAt < computed)
+                when {
+                    keepExistingIfFuture && snoozed -> config.nextTriggerAt
+                    computed == null -> 0L
+                    else -> ScheduleMath.clampToWindow(computed, window, zone)
+                }
+            }
         }
     }
 
@@ -94,10 +111,11 @@ object ReminderScheduler {
      */
     fun resyncAll(context: Context) {
         val repository = SettingsRepository.get(context)
+        val window = repository.activeWindow()
         ReminderType.entries.forEach { type ->
             val config = repository.read(type)
             val now = System.currentTimeMillis()
-            val next = nextTriggerFor(config, now, keepExistingIfFuture = true)
+            val next = nextTriggerFor(config, now, keepExistingIfFuture = true, window = window)
             val updated = config.copy(nextTriggerAt = next)
             if (updated != config) {
                 // 关机期间错过、或时间点已过期：把修正后的时间写回，保证首页显示准确

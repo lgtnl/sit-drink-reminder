@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 统一间距，方便二次开发时整体调整 -->
+    <dimen name="screen_margin">18dp</dimen>
+    <dimen name="card_padding">18dp</dimen>
+    <dimen name="card_radius">20dp</dimen>
+    <dimen name="section_gap">12dp</dimen>
+    <dimen name="row_min_height">52dp</dimen>
+    <dimen name="touch_target">44dp</dimen>
+</resources>

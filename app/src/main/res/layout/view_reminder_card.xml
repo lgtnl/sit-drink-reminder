@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   一张提醒卡片。首页用 <include> 复用两次，
-  标题 / 图标 / 颜色 / 文案在 MainActivity 里按类型填充。
+  标题 / 图标 / 颜色 / 文案 / 状态胶囊在 MainActivity 里按类型填充。
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_card"
+    android:elevation="1dp"
     android:orientation="vertical"
-    android:paddingStart="18dp"
-    android:paddingTop="16dp"
-    android:paddingEnd="18dp"
-    android:paddingBottom="8dp">
+    android:padding="@dimen/card_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,12 +17,23 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/card_icon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:importantForAccessibility="no"
-            android:src="@drawable/ic_drop" />
+        <FrameLayout
+            android:layout_width="42dp"
+            android:layout_height="42dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_icon_circle" />
+
+            <ImageView
+                android:id="@+id/card_icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_drop" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -33,13 +42,33 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/card_title"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="17sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/card_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/card_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_pill_off"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="@color/pill_off_text"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/card_next"
@@ -54,9 +83,15 @@
             android:id="@+id/card_toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:showText="false" />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="14dp"
+        android:background="@color/divider" />
 
     <TextView
         android:id="@+id/card_summary"
@@ -70,11 +105,11 @@
         android:id="@+id/card_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:minHeight="44dp"
+        android:minHeight="@dimen/touch_target"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:text="@string/action_edit_reminder"

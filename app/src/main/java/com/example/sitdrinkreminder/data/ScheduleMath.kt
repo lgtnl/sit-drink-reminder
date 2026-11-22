@@ -9,12 +9,12 @@ import java.util.Locale
  */
 object ScheduleMath {
 
-    const val MIN_INTERVAL_MINUTES = 5
+    const val MIN_INTERVAL_MINUTES = 1
     const val MAX_INTERVAL_MINUTES = 24 * 60
     const val DEFAULT_INTERVAL_MINUTES = 45
 
-    /** 间隔选择弹窗里的预设值（分钟） */
-    val INTERVAL_PRESETS = intArrayOf(15, 30, 45, 60, 90, 120, 180)
+    /** 间隔选择弹窗里的预设值（分钟），用户还可以自己输入任意 1~1440 的值 */
+    val INTERVAL_PRESETS = intArrayOf(1, 2, 3, 5, 10, 15, 30, 45, 60, 90, 120, 180)
 
     /** 错过了多久之内还值得补发一次（超过就重新计时，避免开机后被旧提醒刷屏） */
     const val CATCH_UP_WINDOW_MILLIS = 5 * 60_000L
@@ -86,6 +86,60 @@ object ScheduleMath {
     fun formatMinutesOfDay(minutesOfDay: Int): String {
         val safe = minutesOfDay.coerceIn(0, MINUTES_PER_DAY - 1)
         return String.format(Locale.US, "%02d:%02d", safe / 60, safe % 60)
+    }
+
+    // ---------------------------------------------------------------- 提醒时段
+
+    /** 某个“当天第几分钟”是否落在提醒时段内（支持跨夜） */
+    fun isWithinWindow(minuteOfDay: Int, window: ActiveWindow): Boolean {
+        if (!window.isRestricted) return true
+        val start = window.startMinute.coerceIn(0, MINUTES_PER_DAY - 1)
+        val end = window.endMinute.coerceIn(0, MINUTES_PER_DAY - 1)
+        return if (start < end) {
+            minuteOfDay >= start && minuteOfDay < end
+        } else {
+            minuteOfDay >= start || minuteOfDay < end
+        }
+    }
+
+    /** 严格晚于 [afterMillis] 的下一个“时段开始”时刻 */
+    fun nextWindowStart(
+        afterMillis: Long,
+        window: ActiveWindow,
+        zone: ZoneId = ZoneId.systemDefault()
+    ): Long {
+        val start = window.startMinute.coerceIn(0, MINUTES_PER_DAY - 1)
+        val from = Instant.ofEpochMilli(afterMillis).atZone(zone)
+        // 最多看 3 天，跨夜窗口也一定能在 2 天内找到下一个开始时刻
+        for (dayOffset in 0..2) {
+            val date = from.toLocalDate().plusDays(dayOffset.toLong())
+            val candidate = date
+                .atTime(start / 60, start % 60)
+                .atZone(zone)
+                .toInstant()
+                .toEpochMilli()
+            if (candidate > afterMillis + 1_000L) return candidate
+        }
+        return afterMillis + 24 * 60 * 60_000L
+    }
+
+    /**
+     * 把触发时间裁进提醒时段：在时段内原样返回，否则顺延到下一个时段开始。
+     * 时段关闭或 start == end（全天）时不做任何裁剪。
+     */
+    fun clampToWindow(
+        candidateMillis: Long,
+        window: ActiveWindow,
+        zone: ZoneId = ZoneId.systemDefault()
+    ): Long {
+        if (candidateMillis <= 0L || !window.isRestricted) return candidateMillis
+        val zoned = Instant.ofEpochMilli(candidateMillis).atZone(zone)
+        val minuteOfDay = zoned.hour * 60 + zoned.minute
+        return if (isWithinWindow(minuteOfDay, window)) {
+            candidateMillis
+        } else {
+            nextWindowStart(candidateMillis, window, zone)
+        }
     }
 
     /** "09:30" -> 570，格式不合法返回 null */

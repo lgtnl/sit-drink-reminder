@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -16,6 +17,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.sitdrinkreminder.R
+import com.example.sitdrinkreminder.alarm.ReminderReceiver
 import com.example.sitdrinkreminder.data.ReminderType
 import com.example.sitdrinkreminder.data.SettingsRepository
 import com.example.sitdrinkreminder.ui.MainActivity
@@ -29,6 +31,7 @@ import com.example.sitdrinkreminder.ui.MainActivity
 object NotificationHelper {
 
     private const val TAG = "NotificationHelper"
+    private const val SNOOZE_REQUEST_OFFSET = 100
 
     private val AUDIO_ATTRIBUTES: AudioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -116,6 +119,11 @@ object NotificationHelper {
             .setShowWhen(true)
             .setWhen(System.currentTimeMillis())
             .setContentIntent(contentIntent)
+            .addAction(
+                0,
+                context.getString(R.string.notification_action_snooze),
+                buildSnoozeIntent(context, type)
+            )
 
         if (!repository.soundEnabled) {
             // Android 8.0+ 实际上由频道决定是否响铃，这里再兜一层（旧系统/厂商 ROM）
@@ -188,6 +196,27 @@ object NotificationHelper {
         repository.notificationSignature =
             "sound=${repository.soundEnabled};vibrate=${repository.vibrationEnabled}"
         return !hasUnhealthyChannel(context)
+    }
+
+    /** 撤掉某一类提醒的常驻通知（例如用户点了「稍后」） */
+    fun cancel(context: Context, type: ReminderType) {
+        NotificationManagerCompat.from(context).cancel(type.notificationId)
+    }
+
+    /** 通知上的「稍后 10 分钟」：发一个广播把下一次提醒推迟 */
+    private fun buildSnoozeIntent(context: Context, type: ReminderType): PendingIntent {
+        val intent = Intent(context, ReminderReceiver::class.java).apply {
+            action = ReminderReceiver.ACTION_SNOOZE
+            data = Uri.parse("sitdrink://snooze/${type.name}")
+            putExtra(ReminderReceiver.EXTRA_REMINDER_TYPE, type.name)
+            putExtra(ReminderReceiver.EXTRA_SNOOZE_MINUTES, ReminderReceiver.DEFAULT_SNOOZE_MINUTES)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            type.requestCode + SNOOZE_REQUEST_OFFSET,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun createChannel(
