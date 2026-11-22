@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 应用 -->
+    <string name="app_name">久坐喝水提醒</string>
+    <string name="home_subtitle">轻量 · 离线 · 无广告的定时提醒小工具</string>
+
+    <!-- 提醒类型 / 通知 -->
+    <string name="title_sit">久坐提醒</string>
+    <string name="title_drink">喝水提醒</string>
+    <string name="channel_sit_name">久坐提醒</string>
+    <string name="channel_drink_name">喝水提醒</string>
+    <string name="notification_channel_description">按你设置的时间提醒起身活动或喝水</string>
+    <string name="notification_sit_title">该起来活动一下了</string>
+    <string name="notification_sit_body">站起来走一走，活动 1~2 分钟，顺便放松一下肩颈。</string>
+    <string name="notification_drink_title">该喝水了</string>
+    <string name="notification_drink_body">喝几口温水，补充水分，不要等到口渴才想起喝水。</string>
+
+    <!-- 首页 -->
+    <string name="next_time_disabled">已关闭</string>
+    <string name="next_time_not_configured">请先设置提醒时间</string>
+    <string name="next_time_format">下次提醒：%1$s %2$s</string>
+    <string name="next_time_format_with_remaining">下次提醒：%1$s %2$s（%3$s）</string>
+    <string name="day_today">今天</string>
+    <string name="day_tomorrow">明天</string>
+    <string name="remaining_now">即将提醒</string>
+    <string name="remaining_minutes">还有 %1$d 分钟</string>
+    <string name="remaining_hours">还有 %1$d 小时</string>
+    <string name="remaining_hours_minutes">还有 %1$d 小时 %2$d 分钟</string>
+    <string name="schedule_interval_summary">每 %1$d 分钟提醒一次</string>
+    <string name="schedule_times_summary">每天 %1$s 提醒</string>
+    <string name="schedule_none_summary">还没有添加时间点</string>
+    <string name="action_edit_reminder">修改提醒时间 ›</string>
+
+    <!-- 通知与可靠性 -->
+    <string name="section_notification">通知与可靠性</string>
+    <string name="setting_sound">提示音</string>
+    <string name="setting_vibration">震动</string>
+    <string name="setting_exact_alarm">精确提醒</string>
+    <string name="exact_status_on">已开启：系统允许精确闹钟，提醒更准时</string>
+    <string name="exact_status_off">已关闭：提醒可能延迟几分钟</string>
+    <string name="exact_status_no_permission">系统未授权精确闹钟，提醒可能延迟</string>
+    <string name="setting_battery">电池优化</string>
+    <string name="battery_status_ok">已允许后台运行，提醒更可靠</string>
+    <string name="battery_status_limited">可能被省电策略延迟</string>
+    <string name="battery_action">去设置 ›</string>
+
+    <!-- 权限提示条 -->
+    <string name="banner_notification">通知权限未开启，到点后无法提醒你</string>
+    <string name="banner_notification_action">开启</string>
+    <string name="banner_exact">未授予精确闹钟权限，提醒可能延迟几分钟</string>
+    <string name="banner_exact_action">授权</string>
+    <string name="banner_battery">建议允许后台运行，避免提醒被省电策略延迟</string>
+    <string name="banner_battery_action">设置</string>
+
+    <!-- 页脚 -->
+    <string name="footer_privacy">所有数据只保存在本机：不联网、无账号、无广告、零统计 SDK。</string>
+    <string name="footer_version">MIT License · v%1$s</string>
+
+    <!-- 提醒设置页 -->
+    <string name="settings_title">%1$s设置</string>
+    <string name="settings_enabled">启用提醒</string>
+    <string name="section_mode">提醒方式</string>
+    <string name="mode_interval">按间隔提醒</string>
+    <string name="mode_fixed">按时间点提醒</string>
+    <string name="interval_row_title">提醒间隔</string>
+    <string name="interval_value_format">每 %1$d 分钟</string>
+    <string name="action_change">修改</string>
+    <string name="fixed_row_title">提醒时间点</string>
+    <string name="fixed_hint">到点各提醒一次，可以添加多个时间点</string>
+    <string name="action_add_time">添加时间点</string>
+    <string name="times_empty">还没有时间点，添加后才会提醒</string>
+    <string name="action_done">完成</string>
+    <string name="settings_hint">修改后立即生效；间隔模式会从修改的时刻重新计时。时间以手机当前时区为准。</string>
+    <string name="dialog_interval_title">选择提醒间隔</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_back">返回</string>
+    <string name="action_remove_time">删除这个时间点</string>
+
+</resources>

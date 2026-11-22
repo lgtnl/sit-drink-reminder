@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 品牌色（浅色模式） -->
+    <color name="brand">#FF0F766E</color>
+    <color name="brand_dark">#FF115E59</color>
+    <color name="brand_sit">#FFB45309</color>
+    <color name="brand_drink">#FF0369A1</color>
+
+    <!-- 背景与文字 -->
+    <color name="bg">#FFF5F7F6</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="text_primary">#FF14201E</color>
+    <color name="text_secondary">#FF5C6B69</color>
+    <color name="divider">#FFE4EAE8</color>
+
+    <!-- 提示条 -->
+    <color name="banner_bg">#FFFFF3E0</color>
+    <color name="banner_text">#FF8A4B00</color>
+</resources>

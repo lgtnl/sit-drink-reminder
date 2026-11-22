@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  自适应图标前景层：108x108 画布，安全区是中间 72x72。
+  这里把 24x24 的水滴放大 3.2 倍并居中（translateX = 54 - 3.2*12，
+  translateY = 54 - 3.2*9.7），保证任何形状的遮罩下都不会被裁掉。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="3.2"
+        android:scaleY="3.2"
+        android:translateX="15.6"
+        android:translateY="23">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M12,2C10.2,4.6 7.2,8.4 7.2,12.2C7.2,15.1 9.4,17.4 12,17.4C14.6,17.4 16.8,15.1 16.8,12.2C16.8,8.4 13.8,4.6 12,2Z" />
+    </group>
+</vector>

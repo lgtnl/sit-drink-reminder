@@ -1,0 +1,27 @@
+# Gradle
+.gradle/
+build/
+app/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# 本机配置（SDK 路径等，绝对不能提交）
+local.properties
+keystore.properties
+
+# 签名文件
+*.jks
+*.keystore
+release/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.hprof
+captures/
+.navigation/
+.DS_Store
+
+# 日志与临时产物
+*.log
+.externalNativeBuild/
+.cxx/
