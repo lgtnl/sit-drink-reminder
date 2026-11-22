@@ -34,6 +34,8 @@ class MainActivity : Activity() {
     private lateinit var exactSwitch: Switch
     private lateinit var exactStatus: TextView
     private lateinit var batteryStatus: TextView
+    private lateinit var channelStatus: TextView
+    private lateinit var fixChannelButton: TextView
 
     /** 代码回填控件状态时，屏蔽监听器，避免“刷新 -> 触发保存 -> 再刷新”的死循环 */
     private var updatingWidgets = false
@@ -52,6 +54,8 @@ class MainActivity : Activity() {
         exactSwitch = findViewById(R.id.switch_exact)
         exactStatus = findViewById(R.id.text_exact_status)
         batteryStatus = findViewById(R.id.text_battery_status)
+        channelStatus = findViewById(R.id.text_channel_status)
+        fixChannelButton = findViewById(R.id.button_fix_channel)
 
         sitCard = ReminderCardViews.from(findViewById(R.id.card_sit))
         drinkCard = ReminderCardViews.from(findViewById(R.id.card_drink))
@@ -76,11 +80,16 @@ class MainActivity : Activity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_NOTIFICATIONS) {
-            NotificationHelper.ensureChannels(
-                this,
-                repository.soundEnabled,
-                repository.vibrationEnabled
-            )
+            if (NotificationHelper.hasUnhealthyChannel(this)) {
+                // 授权之后系统可能仍把频道标记为静默，自动重建一次
+                NotificationHelper.recreateChannels(this)
+            } else {
+                NotificationHelper.ensureChannels(
+                    this,
+                    repository.soundEnabled,
+                    repository.vibrationEnabled
+                )
+            }
             refreshUi()
         }
     }
@@ -135,6 +144,10 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.row_battery).setOnClickListener {
             AppPermissions.openBatteryOptimizationSettings(this)
         }
+        fixChannelButton.setOnClickListener { fixChannels() }
+        findViewById<View>(R.id.button_test_notification).setOnClickListener {
+            sendTestNotification()
+        }
     }
 
     private fun showVersion() {
@@ -162,9 +175,47 @@ class MainActivity : Activity() {
         } else {
             getString(R.string.battery_status_limited)
         }
+        updateChannelStatus()
 
         updatingWidgets = false
         updateBanner()
+    }
+
+    /**
+     * 通知渠道自检。MIUI/HyperOS 会把新装 App 的通知默认设为“静默”：
+     * 通知能进通知栏，但没有横幅/声音/震动。这种情况代码里换不了（importance 由系统定），
+     * 必须让用户一键重建渠道或跳到系统设置里改。
+     */
+    private fun updateChannelStatus() {
+        val healthy = !NotificationHelper.hasUnhealthyChannel(this)
+        channelStatus.text = getString(
+            if (healthy) R.string.channel_status_ok else R.string.channel_status_degraded
+        )
+        channelStatus.setTextColor(
+            ContextCompat.getColor(
+                this,
+                if (healthy) R.color.text_secondary else R.color.banner_text
+            )
+        )
+        fixChannelButton.visibility = if (healthy) View.GONE else View.VISIBLE
+    }
+
+    private fun fixChannels() {
+        val recovered = NotificationHelper.recreateChannels(this)
+        refreshUi()
+        if (!recovered) {
+            // 重建后仍然静默 → 是系统级开关/厂商策略，只能去系统设置里改
+            AppPermissions.openChannelSettings(this, ReminderType.SIT.channelId)
+        }
+    }
+
+    private fun sendTestNotification() {
+        if (!NotificationHelper.canPostNotifications(this)) {
+            AppPermissions.requestOrOpenNotificationSettings(this, REQUEST_NOTIFICATIONS)
+            return
+        }
+        NotificationHelper.showReminder(this, ReminderType.SIT)
+        refreshUi()
     }
 
     private fun updateCard(card: ReminderCardViews, config: ReminderConfig) {

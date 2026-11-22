@@ -81,6 +81,10 @@ object NotificationHelper {
             Log.w(TAG, "没有通知权限，跳过本次提醒：$type")
             return
         }
+        if (!isChannelHealthy(context, type)) {
+            // 不阻断发送：通知仍会进通知栏，同时记录日志便于排查“只有通知栏没有横幅”
+            Log.w(TAG, "通知频道被系统降级：${channelState(context, type)}")
+        }
         val repository = SettingsRepository.get(context)
         ensureChannels(context, repository.soundEnabled, repository.vibrationEnabled)
 
@@ -124,6 +128,66 @@ object NotificationHelper {
             // 极端情况：权限在检查之后被撤销
             Log.w(TAG, "发送通知失败（权限被撤销）", e)
         }
+    }
+
+    /** 通知频道当前的真实状态。系统（尤其是 MIUI/HyperOS）可能把频道降级成“静默”。 */
+    data class ChannelState(
+        val exists: Boolean,
+        val blocked: Boolean,
+        val importance: Int,
+        val hasSound: Boolean,
+        val hasVibration: Boolean
+    )
+
+    fun channelState(context: Context, type: ReminderType): ChannelState {
+        val manager = context.getSystemService(NotificationManager::class.java)
+            ?: return ChannelState(false, true, NotificationManager.IMPORTANCE_NONE, false, false)
+        val channel = manager.getNotificationChannel(type.channelId)
+            ?: return ChannelState(false, true, NotificationManager.IMPORTANCE_NONE, false, false)
+        return ChannelState(
+            exists = true,
+            blocked = channel.importance == NotificationManager.IMPORTANCE_NONE,
+            importance = channel.importance,
+            hasSound = channel.sound != null,
+            hasVibration = channel.shouldVibrate()
+        )
+    }
+
+    /**
+     * 频道是否还符合我们的期望：高优先级（能弹横幅）+ 按用户开关设置的声音/震动。
+     * 不健康通常意味着系统把它降级了 —— 这时候光“发通知”是没用的，必须重建频道。
+     */
+    fun isChannelHealthy(context: Context, type: ReminderType): Boolean {
+        val state = channelState(context, type)
+        if (!state.exists || state.blocked) return false
+        if (state.importance < NotificationManager.IMPORTANCE_HIGH) return false
+        val repository = SettingsRepository.get(context)
+        if (repository.soundEnabled && !state.hasSound) return false
+        if (repository.vibrationEnabled && !state.hasVibration) return false
+        return true
+    }
+
+    fun hasUnhealthyChannel(context: Context): Boolean =
+        ReminderType.entries.any { !isChannelHealthy(context, it) }
+
+    /**
+     * 重建频道（删除后用正确的参数重新创建）。只应由用户点“修复”时调用，
+     * 因为它会把用户在系统里对该频道的自定义重置掉。
+     *
+     * @return true 表示重建后已经恢复为高优先级
+     */
+    fun recreateChannels(context: Context): Boolean {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return false
+        val repository = SettingsRepository.get(context)
+        ReminderType.entries.forEach { type ->
+            manager.deleteNotificationChannel(type.channelId)
+            manager.createNotificationChannel(
+                createChannel(context, type, repository.soundEnabled, repository.vibrationEnabled)
+            )
+        }
+        repository.notificationSignature =
+            "sound=${repository.soundEnabled};vibrate=${repository.vibrationEnabled}"
+        return !hasUnhealthyChannel(context)
     }
 
     private fun createChannel(

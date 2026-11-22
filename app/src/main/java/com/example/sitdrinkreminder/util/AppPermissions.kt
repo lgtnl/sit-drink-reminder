@@ -83,6 +83,21 @@ object AppPermissions {
         startSafely(context, intent)
     }
 
+    /**
+     * 直接打开某个通知频道的系统设置页（横幅/声音/震动都在这一页），
+     * 系统把它降级成静默时，用户需要在这里改。
+     */
+    fun openChannelSettings(context: Context, channelId: String) {
+        val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        if (!tryStart(context, intent)) {
+            openNotificationSettings(context)
+        }
+    }
+
     /** 打开系统的“闹钟和提醒”授权页（Android 12+），失败则退回应用详情页 */
     fun openExactAlarmSettings(context: Context) {
         val packageUri = Uri.parse("package:${context.packageName}")

@@ -45,6 +45,13 @@
     <string name="battery_status_limited">可能被省电策略延迟</string>
     <string name="battery_action">去设置 ›</string>
 
+    <!-- 通知渠道自检（MIUI/HyperOS 等可能把新装 App 的通知默认设为静默） -->
+    <string name="channel_status_ok">通知渠道正常：横幅、声音、震动均已开启</string>
+    <string name="channel_status_degraded">系统把通知降级为静默：只有通知栏，没有横幅/声音/震动</string>
+    <string name="action_fix_channel">重建通知渠道（修复静默）</string>
+    <string name="action_channel_settings">打开该通知的系统设置 ›</string>
+    <string name="action_test_notification">发送一条测试通知</string>
+
     <!-- 权限提示条 -->
     <string name="banner_notification">通知权限未开启，到点后无法提醒你</string>
     <string name="banner_notification_action">开启</string>
